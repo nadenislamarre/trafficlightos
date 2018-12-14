@@ -1,0 +1,7 @@
+#!/bin/ash
+
+if test "$1" = start
+then
+    /usr/bin/clewarecontrol 0 0 1
+    cd /tmp && nohup python /usr/share/clewarecontrol_server/app.py&
+fi

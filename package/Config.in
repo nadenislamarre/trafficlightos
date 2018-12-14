@@ -8,6 +8,11 @@ menu "Target packages"
 	source "package/skeleton-init-systemd/Config.in"
 	source "package/skeleton-init-sysv/Config.in"
 
+menu "trafficlight"
+	source "package/trafficlight-initramfs/Config.in"
+	source "package/clewarecontrol/Config.in"
+endmenu
+
 menu "Audio and video applications"
 	source "package/alsa-utils/Config.in"
 	source "package/atest/Config.in"

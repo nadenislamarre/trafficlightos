@@ -1,0 +1,1 @@
+dev=/dev/mmcblk0p1 rootwait hostname=trafficlight domain=local

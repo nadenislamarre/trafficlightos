@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Light traffic</title>
+    <script src="/static/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script language="javascript">
+      $(function() {
+        traffic_enabled1 = false
+        traffic_enabled2 = false
+      })
+      function btn(vred, vorange, vgreen) {
+        traffic_enabled1 = false
+        traffic_enabled2 = false
+        $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: vred, orange: vorange, green: vgreen}), contentType: "application/json; charset=utf-8", success: function(data) {} })
+      }
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms))
+      }
+      async function start_traffic() {
+        if(traffic_enabled1) {
+          return
+      }
+        traffic_enabled1 = true
+        traffic_enabled2 = false
+        start_traffic_recursive()
+      }
+      async function start_traffic_hs() {
+        if(traffic_enabled2) {
+          return
+        }
+        traffic_enabled1 = false
+	traffic_enabled2 = true
+        start_traffic_hs_recursive()
+      }
+      function start_traffic_recursive() {
+        if(traffic_enabled1 == false) return
+        $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: 0, orange: 0, green: 1}), contentType: "application/json; charset=utf-8", success: function(data) { // green
+          setTimeout(function() {
+            if(traffic_enabled1 == false) return
+            $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: 0, orange: 1, green: 0}), contentType: "application/json; charset=utf-8", success: function(data) { // orange
+              setTimeout(function() {
+                if(traffic_enabled1 == false) return
+                $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: 1, orange: 0, green: 0}), contentType: "application/json; charset=utf-8", success: function(data) { // red
+                  setTimeout(function() {
+                    start_traffic_recursive()
+                  }, 10000) // red
+                } })
+              },  1000) // orange
+            } })
+          } , 10000) // green
+        } })
+      }
+      function start_traffic_hs_recursive() {
+        if(traffic_enabled2 == false) return
+        $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: 0, orange: 1, green: 0}), contentType: "application/json; charset=utf-8", success: function(data) {
+          setTimeout(function() {
+            if(traffic_enabled2 == false) return
+            $.ajax({ url: "api/lights", type: "POST", data: JSON.stringify({red: 0, orange: 0, green: 0}), contentType: "application/json; charset=utf-8", success: function(data) {
+              setTimeout(function() {
+                start_traffic_hs_recursive()
+              }, 500) // on
+            } })
+          } , 500) // off
+        } })
+      }
+    </script>
+    <style>
+      .btn {
+        width: 10em;
+        height: 10em;
+	border-radius: 5em;
+      }
+      #btn_red {
+        background-color: red;
+      }
+      #btn_orange {
+        background-color: orange;
+      }
+      #btn_green {
+        background-color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="button" class="btn" id="btn_red"    onclick="btn(1, 0, 0)" />
+    <br />
+    <input type="button" class="btn" id="btn_orange" onclick="btn(0, 1, 0)" />
+    <br />
+    <input type="button" class="btn" id="btn_green"  onclick="btn(0, 0, 1)" />
+    <br /><br />
+    <input type="button" class="btn" value="off" onclick="btn(0, 0, 0)" />
+    <input type="button" class="btn" value="start test traffic" onclick="start_traffic()" />
+    <input type="button" class="btn" value="start hs traffic" onclick="start_traffic_hs()" />
+  </body>
+</html>
